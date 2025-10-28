@@ -55,32 +55,47 @@ def find_col(df: pd.DataFrame, exact=None, contains=None):
                 return col
     return None
 
-# --- Smart default for data folder: prefer a folder that actually has CSVs ---
-import os, glob
+# --- Smart & sticky data-folder picker (local vs cloud) ---
+import glob
 
-def pick_default_data_dir():
-    has_sample = os.path.isdir("data_sample") and glob.glob("data_sample/*.csv")
-    has_data   = os.path.isdir("data") and glob.glob("data/*.csv")
+def folder_has_csvs(path: str) -> bool:
+    return os.path.isdir(path) and bool(glob.glob(os.path.join(path, "*.csv")))
+
+def pick_default_data_dir() -> str:
+    has_sample = folder_has_csvs("data_sample")
+    has_data   = folder_has_csvs("data")
     if has_sample and not has_data:
-        return "data_sample"
+        return "data_sample"     # cloud demo
     if has_data and not has_sample:
-        return "data"
+        return "data"            # local full data
     if has_sample and has_data:
-        # On cloud we typically want the small demo
-        return "data_sample"
-    # nothing found, show sample by default
-    return "data_sample"
+        return "data_sample"     # prefer small demo online
+    return "data_sample"         # nothing else found
 
-default_data_dir = pick_default_data_dir()
-DATA_DIR = st.sidebar.text_input("Data folder", value="data")
+# initialize once per user session
+if "data_dir" not in st.session_state:
+    st.session_state["data_dir"] = pick_default_data_dir()
+
+# if current choice has no CSVs, auto-fallback to data_sample and rerun
+if not folder_has_csvs(st.session_state["data_dir"]) and folder_has_csvs("data_sample"):
+    st.session_state["data_dir"] = "data_sample"
+    st.rerun()
+
+# On cloud (only data_sample exists), lock the input to avoid confusion
+on_cloud_demo = folder_has_csvs("data_sample") and not folder_has_csvs("data")
+DATA_DIR = st.sidebar.text_input("Data folder",
+                                 value=st.session_state["data_dir"],
+                                 key="data_dir",
+                                 disabled=on_cloud_demo)
+
 files = {
-    "orders": os.path.join(DATA_DIR, "orders.csv"),
-    "delivery": os.path.join(DATA_DIR, "delivery_performance.csv"),
-    "routes": os.path.join(DATA_DIR, "routes_distance.csv"),
-    "fleet": os.path.join(DATA_DIR, "vehicle_fleet.csv"),
-    "inventory": os.path.join(DATA_DIR, "warehouse_inventory.csv"),
-    "feedback": os.path.join(DATA_DIR, "customer_feedback.csv"),
-    "costs": os.path.join(DATA_DIR, "cost_breakdown.csv"),
+    "orders":     os.path.join(DATA_DIR, "orders.csv"),
+    "delivery":   os.path.join(DATA_DIR, "delivery_performance.csv"),
+    "routes":     os.path.join(DATA_DIR, "routes_distance.csv"),
+    "fleet":      os.path.join(DATA_DIR, "vehicle_fleet.csv"),
+    "inventory":  os.path.join(DATA_DIR, "warehouse_inventory.csv"),
+    "feedback":   os.path.join(DATA_DIR, "customer_feedback.csv"),
+    "costs":      os.path.join(DATA_DIR, "cost_breakdown.csv"),
 }
 with st.sidebar.expander("Expected CSVs", expanded=False):
     st.write(pd.DataFrame({"logical_name": list(files.keys()), "filename": list(files.values())}))
