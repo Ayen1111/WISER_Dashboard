@@ -56,9 +56,13 @@ def find_col(df: pd.DataFrame, exact=None, contains=None):
     return None
 
 # ---------------------- Files & Sidebar ----------------------
-import os
+import socket
 
-default_data_dir = "data_sample" if os.getenv("STREAMLIT_RUNTIME") else "data"
+# Detect if running on Streamlit Cloud
+if "streamlitapp.com" in socket.gethostname() or "streamlit" in socket.gethostname():
+    default_data_dir = "data_sample"
+else:
+    default_data_dir = "data"
 DATA_DIR = st.sidebar.text_input("Data folder", value="data")
 files = {
     "orders": os.path.join(DATA_DIR, "orders.csv"),
