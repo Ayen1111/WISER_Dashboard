@@ -1,0 +1,18 @@
+
+WISER_Dashboard — Quick Run (Windows)
+
+1) Put your 7 CSVs into .\data\ with exact names:
+   orders.csv, delivery_performance.csv, routes_distance.csv,
+   vehicle_fleet.csv, warehouse_inventory.csv, customer_feedback.csv, cost_breakdown.csv
+
+2) Open Command Prompt in this folder.
+
+3) Create & activate virtual environment:
+   python -m venv .venv
+   .venv\Scripts\activate
+
+4) Install dependencies:
+   pip install -r requirements.txt
+
+5) Launch the app:
+   streamlit run app.py
