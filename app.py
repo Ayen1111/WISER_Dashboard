@@ -56,6 +56,9 @@ def find_col(df: pd.DataFrame, exact=None, contains=None):
     return None
 
 # ---------------------- Files & Sidebar ----------------------
+import os
+
+default_data_dir = "data_sample" if os.getenv("STREAMLIT_RUNTIME") else "data"
 DATA_DIR = st.sidebar.text_input("Data folder", value="data")
 files = {
     "orders": os.path.join(DATA_DIR, "orders.csv"),
