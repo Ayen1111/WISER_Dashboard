@@ -55,14 +55,23 @@ def find_col(df: pd.DataFrame, exact=None, contains=None):
                 return col
     return None
 
-# ---------------------- Files & Sidebar ----------------------
-import socket
+# --- Smart default for data folder: prefer a folder that actually has CSVs ---
+import os, glob
 
-# Detect if running on Streamlit Cloud
-if "streamlitapp.com" in socket.gethostname() or "streamlit" in socket.gethostname():
-    default_data_dir = "data_sample"
-else:
-    default_data_dir = "data"
+def pick_default_data_dir():
+    has_sample = os.path.isdir("data_sample") and glob.glob("data_sample/*.csv")
+    has_data   = os.path.isdir("data") and glob.glob("data/*.csv")
+    if has_sample and not has_data:
+        return "data_sample"
+    if has_data and not has_sample:
+        return "data"
+    if has_sample and has_data:
+        # On cloud we typically want the small demo
+        return "data_sample"
+    # nothing found, show sample by default
+    return "data_sample"
+
+default_data_dir = pick_default_data_dir()
 DATA_DIR = st.sidebar.text_input("Data folder", value="data")
 files = {
     "orders": os.path.join(DATA_DIR, "orders.csv"),
