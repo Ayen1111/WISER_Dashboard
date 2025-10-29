@@ -75,7 +75,7 @@ This dashboard supports Data-Driven **Predict → Rebalance → Save Cost & CO�
 
 ---
 
-## 🚀 How to Run Locally
+##  How to Run Locally
 
 ```bash
 git clone https://github.com/Ayen1111/WISER_Dashboard.git
